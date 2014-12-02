@@ -316,6 +316,7 @@ function Controller(){
 	self.requested_center = {k:37.7833,B:-122.4167};
 	self.types = {};
 	self.items = [];
+	self.items_key = {};
 	self.xhr = null;
 	Controller.prototype.showAllItemsOnMap = function(requested_center, items){
 		var self = this;
@@ -328,6 +329,15 @@ function Controller(){
 				 }, 500, function() {
 				// Animation complete.
 					jQuery("#item-"+rowid.toString()+">td").css({"background-color":"#C4EAF5"});//highlight row corresponding to clicked marker
+					
+					var $tr = jQuery("#item-"+rowid.toString());
+					var point = {};
+					point.k = parseFloat($tr.data("latitude"));
+					point.B = parseFloat($tr.data("longitude"));
+					var center = point;
+					var name = $tr.find(".truck_name").text();
+					var address = $tr.find(".truck_address").text();
+					self.geomap.showCoord(center,name+"<br/>"+address, true);
 				 });
 			});
 		}
@@ -363,10 +373,12 @@ function Controller(){
 		
 		jQuery("a.truck_locator").on("click",function(e){
 			var point = {};
-			point.k = parseFloat(jQuery(this).closest("tr").data("latitude"));
-			point.B = parseFloat(jQuery(this).closest("tr").data("longitude"));
+			var $tr = jQuery(this).closest("tr");
+			point.k = parseFloat($tr.data("latitude"));
+			point.B = parseFloat($tr.data("longitude"));
 			var center = point;
-			var address = jQuery(this).closest("tr").find(".truck_address").text();
+			var address = $tr.find(".truck_address").text();
+			jQuery("tr>td").css({"background-color":"#ffffff"});//remove previous highlight
 			self.geomap.showCoord(center,jQuery(this).text()+"<br/>"+address, true);
 			jQuery('html, body').animate({//scroll to row highlighted
 				scrollTop: jQuery(self.geomap.dom).offset().top
@@ -374,6 +386,7 @@ function Controller(){
 			// Animation complete.
 				
 			 });
+			$tr.find("td").css({"background-color":"#C4EAF5"});//highlight row corresponding to clicked marker
 			e.preventDefault();
 			return false;
 		});
@@ -413,12 +426,15 @@ function Controller(){
 		var data = json_data.data;
 		self.items = [];
 		self.types = {};
+		self.items_key = {};
 		self.requested_center = requested_center;
 		//console.log(data);
 		for(var i=0;i<data.length;i++){
 			item = new Item(data[i]);
-			if(item.isValid() && item.distanceTo(requested_center)<=radius)
+			if(item.isValid() && item.distanceTo(requested_center)<=radius && (typeof self.items_key[item.getName()+"_"+item.getAddress()] == "undefined")){
+				self.items_key[item.getName()+"_"+item.getAddress()] = true;
 				self.items.push(item);
+			}
 		}
 		var type;
 		for(i=0;i<self.items.length;i++){
