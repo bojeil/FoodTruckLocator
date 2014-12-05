@@ -32,7 +32,13 @@ html, body { /* main css */
 	position:relative;float:left;
 	width:48%;
 	padding:2px;
-	min-width:240px;
+	min-width:320px;
+}
+
+@media all and (max-width: 720px){
+	.column{
+		width:95%;
+	}
 }
 .error_message{/* error_messages*/
 	color:#000000;
