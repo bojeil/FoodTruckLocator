@@ -23,7 +23,7 @@ function kmToMiles(km){
 }
 
 function getDayLabel(day){
-	var labels = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+	var labels = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 	day = parseInt(day,10);
 	if(typeof labels[day] == "undefined")
 		return "N/A";
@@ -511,8 +511,8 @@ function Controller(){
 		temp += "<option value='none' selected>Select Food Truck Type</option>";
 		for(var i=0;i<keys.length;i++){
 			key = keys[i];
-			var typeLabel = key.substring(0,50);
-			if(key.length>50)
+			var typeLabel = key.substring(0,30);
+			if(key.length>30)
 				typeLabel += "...";
 			if(key=="*")
 				typeLabel = "All Food Trucks";

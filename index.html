@@ -16,12 +16,13 @@
 <body>
 
 <!--  -->
-<div style="float:left;width:100%;">
+<div style="float:left;width:99%;">
 	<div style="width:100%;float:left;position:relative;">
 		<div class="formContainer" style="position:relative;float:left;width:100%;"><!-- main filter form container -->
 			<form name="filter" id="filter" method="get"> <!-- main form -->
-			<div style="font-weight:bold;font-size:20px">Food Truck Locator:</div>
+			<div style="font-weight:bold;font-size:15px">Food Truck Locator:</div>
 			<input type="text" name="address" id="address" placeholder="Location" value="San Francisco, CA" size="40"></input> <!-- address input -->
+			<br/>
 			<span class="label">Within</span> 
 			<select id="distance" name="distance"> <!-- distance radius -->
 				<option value="0.5">0.5 miles</option>
@@ -31,6 +32,7 @@
 				<option value="10">10 miles</option>
 				<option value="20">20 miles</option>
 			</select>
+			<br/>
 			<select id="foodType" name="foodType"> <!-- food type screening -->
 				<option value="*" selected>All Food Trucks</option>
 				<option value="none">None</option>
@@ -71,6 +73,7 @@
 				<option value="22:00">10PM</option>
 				<option value="23:00">11PM</option>
 			</select>
+			<br/>
 			<span class="label">End</span> <!-- end date -->
 			<select id="end_date" name="end_date">
 				<option value="0">Sunday</option>
@@ -107,6 +110,7 @@
 				<option value="22:00">10PM</option>
 				<option value="23:00">11PM</option>
 			</select>
+			<br/>
 			<input type="submit" value="Refresh" id="submit_button"/> <!-- refresh/submit button, filters and updates results -->
 			</form>
 		</div>
