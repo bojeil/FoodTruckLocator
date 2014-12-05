@@ -1,0 +1,46 @@
+.formContainer{ /* form container */
+	border: .1em solid #cccccc; 
+	padding:5px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	max-width:480px;
+	width:100%;
+}
+
+.message{ /* status messages */
+	color:#5e73db;
+	font-height:8px;
+}
+
+.label{ /* label class */
+	font-size:13px;
+	color:#777777;
+}
+
+html, body { /* main css */
+	height: 90%;
+	margin: 5;
+	padding: 5;
+}
+
+#map_canvas { /* google map canvas */
+	height: 400px;
+	width: 100%;
+}
+.column{/*column container */
+	position:relative;float:left;
+	width:48%;
+	padding:2px;
+	min-width:360px;
+}
+.error_message{/* error_messages*/
+	color:#000000;
+	font-weight:bold;
+	font-size:12px;
+	background-color:#ff0000;
+	border: .1em solid #000000; 
+	padding:5px;
+	width:600px;
+	display:none;
+}
