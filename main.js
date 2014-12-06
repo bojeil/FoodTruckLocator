@@ -174,12 +174,20 @@ function Item(data){
 		var current;
 		var start = start_date +" "+ start_time;//get start date time
 		var end = end_date +" "+ end_time;//get end date time
-		//return true;
+		
 		for(var i=0;i<self.slots.length;i++){//for each item time slot
 			current = self.slots[i].day+" "+self.slots[i].time;//get time slot datetime
-			if(current>=start && current <=end) //if within range, return true
-				return true;
+			if(start<=end){//start less than end
+				if(current>=start && current <=end){ //if within range, return true
+					return true;
+				}
+			}else{//end less than start
+				if(current>=start || current <=end){//current date greater than start or less than end
+					return true;
+				}
+			}
 		}
+		
 		return false;//not within range, return false
 	};
 	
@@ -196,13 +204,23 @@ function Item(data){
 		var valid_dates = [];//array of valid dates to be returned
 		for(var i=0;i<self.slots.length;i++){//for each time slot
 			current = self.slots[i].day+" "+self.slots[i].time;
-			
-			if(current>=start && current <=end){//if within date range (inclusive)
-				if(useLabels){//use labels
-					currentLabel = getDayLabel(self.slots[i].day)+" "+getTimeLabel(self.slots[i].time);//get label
-					valid_dates.push(currentLabel);//push to valid dates
-				}else{//return objects
-					valid_dates.push(self.slots[i]);
+			if(start<=end){//start less than end
+				if(current>=start && current <=end){//if within date range (inclusive)
+					if(useLabels){//use labels
+						currentLabel = getDayLabel(self.slots[i].day)+" "+getTimeLabel(self.slots[i].time);//get label
+						valid_dates.push(currentLabel);//push to valid dates
+					}else{//return objects
+						valid_dates.push(self.slots[i]);
+					}
+				}
+			}else{//end less than start
+				if(current>=start || current <=end){//current date greater than start or less than end
+					if(useLabels){//use labels
+						currentLabel = getDayLabel(self.slots[i].day)+" "+getTimeLabel(self.slots[i].time);//get label
+						valid_dates.push(currentLabel);//push to valid dates
+					}else{//return objects
+						valid_dates.push(self.slots[i]);
+					}
 				}
 			}
 		}
@@ -292,12 +310,13 @@ function GeoMap(dom, center, onInit){
 			var pos = new google.maps.LatLng(point.k,point.B);//get coord position
 			if(self.infowindow!=null)
 				self.infowindow.close();//close any open info window
-			self.infowindow = new google.maps.InfoWindow({//create info window at pos on map (will not show if blank)
-					  map: self.map,
-					  position: pos,
-					  content: label
-			});
-
+			if(label!=""){//do not display info window if blank label
+				self.infowindow = new google.maps.InfoWindow({//create info window at pos on map (will not show if blank)
+						  map: self.map,
+						  position: pos,
+						  content: label
+				});
+			}
 			self.map.setCenter(pos);//center map at requested pos
 		}
 	};
@@ -452,7 +471,7 @@ function Controller(){
 						point.k = parseFloat($tr.data("latitude"));//get truck latitude
 						point.B = parseFloat($tr.data("longitude"));//get truck longitude
 						var center = point;
-						var name = $tr.find(".truck_name").text();//get truck name
+						var name = $tr.find(".truck_locator").text();//get truck name
 						var address = $tr.find(".truck_address").text();//get truck street address
 						self.geomap.showCoord(center,name+"<br/>"+address, true);//display info window on map at clicked marker
 					 });
@@ -468,31 +487,32 @@ function Controller(){
 			var temp = "<table class='tablesorter'>";
 			temp += "<thead>";
 			temp += "<tr>";
-			temp += "<th>Name</th>";	
-			temp += "<th>Street</th>";
-			temp += "<th>Type</th>";	
+			temp += "<th>Name/Address/Time</th>";	
 			temp += "<th>Description</th>";	
-			temp += "<th>Time</th>";
 			temp += "</tr>";
 			temp += "</thead>";
 			temp += "<tbody>";
 			//build table body
 			for(var i=0;i<items.length;i++){//for each truck item
-				//get description of food (max 20 characters)
-				desc = items[i].getType().substring(0,20);
-				if(items[i].getType().length>20)
+				//get description of food (max 100 characters)
+				desc = items[i].getType().substring(0,100);
+				if(items[i].getType().length>100)
 					desc += "...";
 				//get all valid date labels within current range
 				valid_dates = items[i].getValidDates(self.start_date, self.start_time, self.end_date, self.end_time);
 				//container row holds latitude and longitude coordinates of current truck as well as item id
 				temp += "<tr id='item-"+items[i].getId().toString()+"' data-latitude='"+items[i].getLatitude()+"' data-longitude='"+items[i].getLongitude()+"'>";
-				temp += "<td class='truck_name'><a href='#' class='truck_locator'>"+items[i].getName()+"</a></td>";//truck company name, on click will display location on map
-				temp += "<td class='truck_address'>"+items[i].getAddress()+"</td>";//truck street address
-				temp += "<td class='truck_facilityType'>"+items[i].getFacilityType()+"</td>";//truck type
+				temp += "<td class='truck_name' title='"+items[i].getName().replace(/(['"])/g, "")+"'><a href='#' class='truck_locator'>";
+				//show name
+				temp += items[i].getName();
+				temp += "</a>";
+				temp += "<span class='truck_facilityType'>&nbsp;("+items[i].getFacilityType()+")</span>";//truck type
+				temp += "<div class='truck_address'>"+items[i].getAddress()+"</div>";//truck street address
+				temp += "<div class='truck_time'>";
+				temp +=  valid_dates.join(", ");//display all valid dates, one per line
+				temp += "</div>";
+				temp += "</td>";//truck company name, on click will display location on map
 				temp += "<td class='truck_type' title='"+desc+"'>"+desc+"</td>";//display truck food type
-				temp += "<td class='truck_time'>";
-				temp +=  valid_dates.join("<br/>");//display all valid dates, one per line
-				temp += "</td>";
 				temp += "</tr>";
 			}
 			temp += "</tbody>";
@@ -612,7 +632,7 @@ function Controller(){
 		jQuery("#error").html("").hide();//hide error message
 		var start = jQuery("#start_date").val()+" "+jQuery("#start_time").val();//start date string (allows string comparison)
 		var end = jQuery("#end_date").val()+" "+ jQuery("#end_time").val();//end date string(allows string comparison)
-		if(start >end){//invalid range, return false and display error message
+		if(start >end && (jQuery("#start_date").val() == jQuery("#end_date").val())){//invalid range (same day but start time greater than end time), return false and display error message
 			self.displayError("Invalid date range, start datetime should be less than end datetime!");
 			jQuery("#start_date").focus();
 			return false;
