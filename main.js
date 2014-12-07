@@ -459,20 +459,19 @@ function Controller(){
 				items, //array of items to be displayed
 				function(rowid){//item click handler, receives item id to find in table
 					jQuery("tr>td").css({"background-color":"#ffffff"});//remove previous highlighted rows
+					var $tr = jQuery("#item-"+rowid.toString());//get containing row
+					var point = {};//location point corresponding to clicked marker
+					point.k = parseFloat($tr.data("latitude"));//get truck latitude
+					point.B = parseFloat($tr.data("longitude"));//get truck longitude
+					var center = point;
+					var name = $tr.find(".truck_locator").text();//get truck name
+					var address = $tr.find(".truck_address").text();//get truck street address
+					self.geomap.showCoord(center,name+"<br/>"+address, true);//display info window on map at clicked marker
 					jQuery('html, body').animate({//scroll to top of row corresponding to marker clicked
 						scrollTop: jQuery("#item-"+rowid.toString()).offset().top 
-					 }, 500, function() {
+					 }, 200, function() {
 						// Animation complete.
 						jQuery("#item-"+rowid.toString()+">td").css({"background-color":"#C4EAF5"});//highlight row corresponding to clicked marker
-						
-						var $tr = jQuery("#item-"+rowid.toString());//get containing row
-						var point = {};//location point corresponding to clicked marker
-						point.k = parseFloat($tr.data("latitude"));//get truck latitude
-						point.B = parseFloat($tr.data("longitude"));//get truck longitude
-						var center = point;
-						var name = $tr.find(".truck_locator").text();//get truck name
-						var address = $tr.find(".truck_address").text();//get truck street address
-						self.geomap.showCoord(center,name+"<br/>"+address, true);//display info window on map at clicked marker
 					 });
 				}
 			);
