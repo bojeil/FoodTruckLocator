@@ -348,8 +348,6 @@ function GeoMap(dom, center, onInit){
 					//add click listener on marker to highlight its corresponding row in table
 					(function(rowid) {
 						google.maps.event.addListener(marker, 'click', function() {//for each marker click
-							self.map.setZoom(16);//on marker click, zoom in
-							self.map.setCenter(marker.getPosition());//center map at clicked marker position
 							
 							if(typeof onItemClick == "function"){//if click handler specified
 								onItemClick(rowid);//run custom click handler, pass item id to it
