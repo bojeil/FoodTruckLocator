@@ -422,7 +422,7 @@ function Controller(){
 	self.start_time = "";//current start time (for filtered items)
 	self.end_date = "";//current end day (for filtered items)
 	self.end_time = "";//current end time (for filtered items)
-	
+	self.current_sort_order = [[2,0]];//current table sort order
 	Controller.prototype.load_data = function(){
 		//run on map load, loads food truck data json file, on load, enable form, initialize form and display data selected
 		var self = this;
@@ -485,15 +485,29 @@ function Controller(){
 		if(items.length>0){//if data available
 			var valid_dates, desc;
 			//build table header with fields (name, stree, truck type, food type, availability time)
-			var temp = "<table class='tablesorter'>";
-			temp += "<thead>";
-			temp += "<tr>";
-			temp += "<th>Name/Address/Time</th>";	
-			temp += "<th>Description</th>";	
-			temp += "<th>Distance</th>";	
-			temp += "</tr>";
-			temp += "</thead>";
-			temp += "<tbody>";
+			var temp = "";
+			if(!jQuery("#results table.tablersorter").length){//table doesn't exist yet, create it
+				temp += "<table class='tablesorter'>";
+				temp += "<thead>";
+				temp += "<tr>";
+				temp += "<th>Name/Address/Time</th>";	
+				temp += "<th>Description</th>";	
+				temp += "<th>Distance</th>";	
+				temp += "</tr>";
+				temp += "</thead>";
+				temp += "<tbody>";
+				temp += "</tbody>";
+				temp += "</table>";
+				jQuery("#results").html(temp);//display updated table
+				
+				jQuery("#results table").off("sortEnd");//remove previous sort end listener
+				jQuery("#results table").on("sortEnd", function(event) {//on sort end, save current sort order
+					// save current sort order
+					self.current_sort_order = event.target.config.sortList;
+				});
+			}
+			//populate table body
+			temp = "";
 			//build table body
 			for(var i=0;i<items.length;i++){//for each truck item
 				//get description of food (max 100 characters)
@@ -516,16 +530,13 @@ function Controller(){
 				temp += "</td>";//truck company name, on click will display location on map
 				temp += "<td class='truck_type' title='"+desc+"'>"+desc+"</td>";//display truck food type
 				temp += "<td class='truck_distance'>";
-				temp += parseInt(items[i].distanceTo(self.requested_center)*100,10)/100;
+				temp += items[i].distanceTo(self.requested_center).toFixed(2);
 				temp += "mi";
 				temp += "</td>";
 				temp += "</tr>";
 			}
-			temp += "</tbody>";
-			temp += "</table>";
-			jQuery("#results").html(temp);//display updated table
-		
-			jQuery("#results>table").tablesorter( {sortList: [[0,0]]} ); //make table sortable
+			jQuery("#results>table tbody").html(temp);//display updated table
+			jQuery("#results>table").tablesorter( {sortList: self.current_sort_order} ); //make table sortable, sort keep previous sorting order
 		}else{
 			jQuery("#results").html("No data available!");//no data available
 		}
