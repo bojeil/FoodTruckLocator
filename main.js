@@ -448,6 +448,7 @@ function Controller(){
 				self.displayError("Unable to connect to server!");
 			}
 		});
+		
 	};
 	
 	Controller.prototype.showAllItemsOnMap = function(requested_center, items){
@@ -489,6 +490,7 @@ function Controller(){
 			temp += "<tr>";
 			temp += "<th>Name/Address/Time</th>";	
 			temp += "<th>Description</th>";	
+			temp += "<th>Distance</th>";	
 			temp += "</tr>";
 			temp += "</thead>";
 			temp += "<tbody>";
@@ -513,6 +515,10 @@ function Controller(){
 				temp += "</div>";
 				temp += "</td>";//truck company name, on click will display location on map
 				temp += "<td class='truck_type' title='"+desc+"'>"+desc+"</td>";//display truck food type
+				temp += "<td class='truck_distance'>";
+				temp += parseInt(items[i].distanceTo(self.requested_center)*100,10)/100;
+				temp += "mi";
+				temp += "</td>";
 				temp += "</tr>";
 			}
 			temp += "</tbody>";
@@ -550,6 +556,7 @@ function Controller(){
 		//updates list of types and refreshes map and table results
 		var self = this;
 		var type;
+		var item;
 		var data = json_data;//json data
 		self.items = [];//reset items list
 		self.types = {};//reset types list
@@ -598,8 +605,9 @@ function Controller(){
 		}
 		keys.sort();//sort type keys
 		var current_selected = jQuery("#foodType").val();//get current selected type before updating list
+		
 		//build updated list content
-		temp += "<option value='none' selected>Select Food Truck Type</option>";//none option
+		//temp += "<option value='none'>Select Food Truck Type</option>";//none option
 		for(var i=0;i<keys.length;i++){//for each type option
 			key = keys[i];//get key
 			//show up to 30 characters
@@ -651,7 +659,7 @@ function Controller(){
 		var self = this;
 		//filter items using distance from center and date range, populates data types
 		self.parse_json(self.requested_center, json_data, jQuery("#distance").val(), jQuery("#start_date").val(), jQuery("#start_time").val(), jQuery("#end_date").val(), jQuery("#end_time").val());
-	
+		
 		jQuery("#filter").off("submit");//remove previous submit listeners
 		jQuery("#filter").on("submit",function(e){//on form submit, get address, update map and results
 			var address = jQuery("#address").val();//get address
@@ -736,6 +744,7 @@ function Controller(){
 		var self = this;
 		jQuery("#address").val("San Francisco, CA");//default location
 		//on document ready, initialize google map, 
+		self.initLocation();//initialize map
 		if (navigator.geolocation) {//if geolocaiton api available
 			var timeoutVal = 10 * 1000; //10 seconds timeout
 			navigator.geolocation.getCurrentPosition(
@@ -750,7 +759,7 @@ function Controller(){
 				{ enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
 			);
 		}
-		self.initLocation();//initialize map
+		
 	};
 	
 	Controller.prototype.initLocation = function(){
