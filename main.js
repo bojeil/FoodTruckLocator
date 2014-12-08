@@ -402,28 +402,27 @@ function GeoMap(dom, center, onInit){
 	self.init();//initialize map
 }
 
-function Controller(){
+CONTROLLER = {
 	//controller builds entire application, loads map, loads truck data, populates form, and displays filtered results in table as well as map
 	//allows all interaction (initializes event listeners to form submit, select field change, results click, map item clicks, etc...)
-	var self =  this;
-	self.json_data = {}; //truck json data loaded from server
-	self.geomap = null;//map object
-	self.json_url = "map.json";//url for jason data
-	self.requested_center = {k:37.7833,B:-122.4167};//default requested center (SF)
-	self.types = {};//dictionary of type to array of item indexes
-	self.items = [];//array of food truck items
-	self.items_key = {};//keeps track of unique trucks, using truck id/address key, prevents duplicates
-	self.xhr = null;//XMLHttpRequest object (used to load json data)
-	self.msg_duration = 10000;//message display duration in ms
-	self.error_timer = null;//error display timer
-	self.start_date = "";//current start day (for filtered items)
-	self.start_time = "";//current start time (for filtered items)
-	self.end_date = "";//current end day (for filtered items)
-	self.end_time = "";//current end time (for filtered items)
-	self.current_sort_order = [[2,0]];//current table sort order
-	Controller.prototype.load_data = function(){
+	json_data:{}, //truck json data loaded from server
+	geomap:null,//map object
+	json_url:"map.json",//url for jason data
+	requested_center:{k:37.7833,B:-122.4167},//default requested center (SF)
+	types:{},//dictionary of type to array of item indexes
+	items:[],//array of food truck items
+	items_key:{},//keeps track of unique trucks, using truck id/address key, prevents duplicates
+	xhr:null,//XMLHttpRequest object (used to load json data)
+	msg_duration:10000,//message display duration in ms
+	error_timer:null,//error display timer
+	start_date:"",//current start day (for filtered items)
+	start_time:"",//current start time (for filtered items)
+	end_date:"",//current end day (for filtered items)
+	end_time:"",//current end time (for filtered items)
+	current_sort_order:[[2,0]],//current table sort order
+	load_data:function(){
 		//run on map load, loads food truck data json file, on load, enable form, initialize form and display data selected
-		var self = this;
+		var self = CONTROLLER;
 		
 		jQuery("#loading1").show();//show loading image
 		jQuery("#filter input,#filter select").attr("disabled","disabled");//disable form fields
@@ -447,12 +446,12 @@ function Controller(){
 			}
 		});
 		
-	};
+	},
 	
-	Controller.prototype.showAllItemsOnMap = function(requested_center, items){
+	showAllItemsOnMap:function(requested_center, items){
 		//show filtered items list in html table and on map (as markers) centered at requested_center
 		//add event listeners to map marker click and table truck clicks
-		var self = this;
+		var self = CONTROLLER;
 		if(self.geomap){//if map object ready
 			self.geomap.showAllItemsOnMap(
 				requested_center, //center map at requested_center
@@ -557,12 +556,12 @@ function Controller(){
 			e.preventDefault();//prevent default click behavior
 			return false;
 		});
-	};
+	},
 	
-	Controller.prototype.parse_json = function(requested_center, json_data, radius, start_date, start_time, end_date, end_time){
+	parse_json:function(requested_center, json_data, radius, start_date, start_time, end_date, end_time){
 		//takes in map center, json truck data, distance and range and updates matching items for requested criteria
 		//updates list of types and refreshes map and table results
-		var self = this;
+		var self = CONTROLLER;
 		var type;
 		var item;
 		var data = json_data;//json data
@@ -600,12 +599,12 @@ function Controller(){
 		self.showTypes(self.types);//update form types with current available types
 		
 		jQuery("#foodType").trigger("change");//trigger type change to force results update
-	};
+	},
 
-	Controller.prototype.showTypes = function(types){
+	showTypes:function(types){
 		//get dictionary of types (key id food type, value is an array of indexes in items array for items matching current type)
 		//populates it in food type select field, and keeps default selected field
-		var self = this;
+		var self = CONTROLLER;
 		var temp = "";
 		var keys = [];//array of keys
 		for(var key in types){//for each type
@@ -628,21 +627,21 @@ function Controller(){
 		}
 		jQuery("#foodType").html(temp);//populate options
 		jQuery("#foodType").val(current_selected);//reselect default option if found
-	};
+	},
 	
-	Controller.prototype.displayError = function(msg){
+	displayError:function(msg){
 		//display timed error
-		var self = this;
+		var self = CONTROLLER;
 		if(self.error_timer!=null)
 			clearTimeout(self.error_timer);//clear previous timer
 		jQuery("#error").html(msg).show();//display message
 		self.error_timer = setTimeout(function(){jQuery("#error").html("").hide();},self.msg_duration);//run timer so message is cleared at end
 		
-	};
+	},
 	
-	Controller.prototype.validateForm = function(){
+	validateForm:function(){
 		//validate form, currently only checks date range is valid, return false otherwise
-		var self = this;
+		var self = CONTROLLER;
 		//clear error, reset timer
 		clearTimeout(self.error_timer);//clear previous timeer
 		jQuery("#error").html("").hide();//hide error message
@@ -654,9 +653,9 @@ function Controller(){
 			return false;
 		}
 		return true;//valid form
-	};
+	},
 	
-	Controller.prototype.init_form = function(json_data){
+	init_form:function(json_data){
 		//run on json data load
 		//initialize form with json data, parse json data and filter items according to distance and date range
 		//initializes form submit handler
@@ -664,7 +663,7 @@ function Controller(){
 		//distance change handler
 		//initializes default current date range
 		//refreshes form results
-		var self = this;
+		var self = CONTROLLER;
 		//filter items using distance from center and date range, populates data types
 		self.parse_json(self.requested_center, json_data, jQuery("#distance").val(), jQuery("#start_date").val(), jQuery("#start_time").val(), jQuery("#end_date").val(), jQuery("#end_time").val());
 		
@@ -716,11 +715,11 @@ function Controller(){
 		
 		self.initDateRange();//initialize to default range
 		jQuery("#filter").submit();//submit form to update results based on current criteria
-	};
+	},
 	
-	Controller.prototype.initDateRange = function(){
+	initDateRange:function(){
 		//initialize data range, set start to current hour, end to next hour of current day
-		var self  = this;
+		var self  = CONTROLLER;
 		var now, day, hour, time, next;
 		now = new Date();//current time
 		day = now.getDay();//get day of week
@@ -745,11 +744,11 @@ function Controller(){
 			time = hour.toString()+":00";
 		jQuery("#end_date").val(day);//set end day
 		jQuery("#end_time").val(time);//set end time
-	};
+	},
 	
-	Controller.prototype.init = function(){
+	init:function(){
 		//initialize map and load map data, try to use user's geolocation if available, otherwise use default
-		var self = this;
+		var self = CONTROLLER;
 		jQuery("#address").val("San Francisco, CA");//default location
 		//on document ready, initialize google map, 
 		self.initLocation();//initialize map
@@ -768,22 +767,21 @@ function Controller(){
 			);
 		}
 		
-	};
+	},
 	
-	Controller.prototype.initLocation = function(){
+	initLocation:function(){
 		//initialize map at requested location and then load truck data to populate map and form
-		var self = this;
+		var self = CONTROLLER;
 		//initialize map in div of id map_canvas, at requested center
 		self.geomap = new GeoMap(document.getElementById("map_canvas"), self.requested_center, 
 			function(){//on map initialization, load truck data
 				self.load_data();
 			}
 		);
-	};
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
-var controller = new Controller();//create application controller
 jQuery(document).ready(function() {//on document ready, initialize map, show all items on map click event
-	controller.init();//initialize application
+	CONTROLLER.init();//initialize application
 });
