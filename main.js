@@ -6,7 +6,24 @@ if (typeof(Number.prototype.toRad) === "undefined") {
     return this * Math.PI / 180;
   }
 }
+
+function getLongitude(point){
+	//return longitude of a point
+	return point.lng();
+}
+
+function getLatitude(point){
+	//return latitude of a point
+	return point.lat();
+}
+
+function createPoint(lat, lon){
+	//create location point based on latitude and longitude provided
+	return new google.maps.LatLng(lat,lon);
+}
+
 function distance(lon1, lat1, lon2, lat2) {
+	//console.log(lon1+","+ lat1+" "+ lon2+","+ lat2);
 	//returns the distance in km between 2 map coordinates 
 	//point 1: latitude (lat1), longitude (lon1)
 	//point 2: latitude (lat2), longitude (lon2)
@@ -165,7 +182,7 @@ function Item(data){
 		var self = this;
 		if(!self.isValid()) return -1;
 		if(c==null) return -1;
-		return kmToMiles(distance(parseFloat(self.longitude), parseFloat(self.latitude), parseFloat(c.B), parseFloat(c.k)));
+		return kmToMiles(distance(parseFloat(self.longitude), parseFloat(self.latitude), parseFloat(getLongitude(c)), parseFloat(getLatitude(c))));
 	};
 	
 	Item.prototype.withinDates = function(start_date, start_time, end_date, end_time){
@@ -239,7 +256,7 @@ function GeoMap(dom, center, onInit){
 	self.infowindow = null;//info window displayed at a map location
 	self.markersArray = [];//array of map markers when all geo locations are to be plotted
 	self.geocoder = new google.maps.Geocoder();//map geocoder, use to find geolocation of addresses
-	self.requested_center = center;//{k:37.7833,B:-122.4167}
+	self.requested_center = center;
 	self.dom = dom;//dom object where map is to be loaded
 	self.onInit = onInit;//on map load function
 	
@@ -307,7 +324,7 @@ function GeoMap(dom, center, onInit){
 			if(!noClear){
 				self.clearMap();//clear map
 			}
-			var pos = new google.maps.LatLng(point.k,point.B);//get coord position
+			var pos = new google.maps.LatLng(getLatitude(point),getLongitude(point));//get coord position
 			if(self.infowindow!=null)
 				self.infowindow.close();//close any open info window
 			if(label!=""){//do not display info window if blank label
@@ -392,7 +409,7 @@ function GeoMap(dom, center, onInit){
 			self.initialize();
 		}else{//wait for window to finish load and the initialize map
 			google.maps.event.addDomListener(window, 'load', 
-				function(){	
+				function(){
 					self.initialize();
 				}
 			);//initialize map
@@ -408,7 +425,7 @@ CONTROLLER = {
 	json_data:{}, //truck json data loaded from server
 	geomap:null,//map object
 	json_url:"map.json",//url for jason data
-	requested_center:{k:37.7833,B:-122.4167},//default requested center (SF)
+	requested_center:createPoint(37.7833,-122.4167),//default requested center (SF)
 	types:{},//dictionary of type to array of item indexes
 	items:[],//array of food truck items
 	items_key:{},//keeps track of unique trucks, using truck id/address key, prevents duplicates
@@ -459,9 +476,7 @@ CONTROLLER = {
 				function(rowid){//item click handler, receives item id to find in table
 					jQuery("tr>td").css({"background-color":"#ffffff"});//remove previous highlighted rows
 					var $tr = jQuery("#item-"+rowid.toString());//get containing row
-					var point = {};//location point corresponding to clicked marker
-					point.k = parseFloat($tr.data("latitude"));//get truck latitude
-					point.B = parseFloat($tr.data("longitude"));//get truck longitude
+					var point = createPoint(parseFloat($tr.data("latitude")), parseFloat($tr.data("longitude")));//location point corresponding to clicked marker
 					var center = point;
 					var name = $tr.find(".truck_locator").text();//get truck name
 					var address = $tr.find(".truck_address").text();//get truck street address
@@ -538,10 +553,8 @@ CONTROLLER = {
 		}
 		
 		jQuery("a.truck_locator").on("click",function(e){//table truck name click listener
-			var point = {};//point corresponding to truck location
 			var $tr = jQuery(this).closest("tr");//get container row
-			point.k = parseFloat($tr.data("latitude"));//get truck's latitude from container row
-			point.B = parseFloat($tr.data("longitude"));//get truck's longitude from container row
+			var point = createPoint(parseFloat($tr.data("latitude")), parseFloat($tr.data("longitude")));//truck's location from container row
 			var center = point;
 			var address = $tr.find(".truck_address").text();//get clicked truck street address
 			jQuery("tr>td").css({"background-color":"#ffffff"});//remove previous highlighted rows
@@ -756,7 +769,7 @@ CONTROLLER = {
 			var timeoutVal = 10 * 1000; //10 seconds timeout
 			navigator.geolocation.getCurrentPosition(
 				function(position){//success, location found
-					self.requested_center = {k:position.coords.latitude,B:position.coords.longitude};//update map center to user's locaiton
+					self.requested_center = createPoint(position.coords.latitude, position.coords.longitude);//update map center to user's location
 					jQuery("#address").val(position.coords.latitude+","+position.coords.longitude);//update address field
 					self.initLocation();//initialize map with user's location
 				},
